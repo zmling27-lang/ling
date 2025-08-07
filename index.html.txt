@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回音壁 - 论坛</title>
+<style>
+/* 列表视图美化 */
+@keyframes star-glow-list {
+    0% { box-shadow: 0 0 12px rgba(216, 191, 216, 0.4), 0 0 22px rgba(230, 230, 250, 0.3); }
+    50% { box-shadow: 0 0 22px rgba(216, 191, 216, 0.7), 0 0 42px rgba(230, 230, 250, 0.5); }
+    100% { box-shadow: 0 0 12px rgba(216, 191, 216, 0.4), 0 0 22px rgba(230, 230, 250, 0.3); }
+}
+.thread-list-container-custom {
+    background: linear-gradient(135deg, #fdfaff 90%, #fff0f7);
+    border-radius: 20px;
+    padding: 30px 35px;
+    font-family: 'Georgia', serif;
+    max-width: 1000px;
+    margin: auto;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    animation: star-glow-list 9s infinite ease-in-out;
+}
+.list-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e6e6fa;
+}
+.list-header-custom h2 {
+    font-size: 2em;
+    font-weight: bold;
+    color: #6a5acd;
+    margin: 0;
+    text-shadow: 0 0 3px #dda0dd;
+}
+.list-header-custom .action-button {
+    background-color: #e6e6fa;
+    color: #8a2be2;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.list-header-custom .action-button:hover {
+    background-color: #d8bfd8;
+    transform: scale(1.05);
+}
+.post-list-custom {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.post-item-custom {
+    display: grid;
+    grid-template-columns: 1fr 4fr 1.5fr 1.5fr;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    transition: background-color 0.3s, transform 0.2s;
+    cursor: pointer;
+}
+.post-item-custom:hover {
+    background-color: rgba(230, 230, 250, 0.6);
+    transform: translateX(5px);
+}
+.post-item-custom.pinned {
+    background-color: rgba(255, 248, 220, 0.7);
+    font-weight: bold;
+}
+.post-item-custom.pinned:hover {
+    background-color: rgba(255, 248, 220, 1);
+}
+.post-type-custom {
+    font-weight: bold;
+}
+.type-notice { color: #ff4500; }
+.type-chat { color: #3cb371; }
+.type-help { color: #1e90ff; }
+.type-rant { color: #dc143c; }
+.type-share { color: #ffa500; }
+.post-title-custom {
+    color: #483d8b;
+    font-size: 1.1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.post-author-custom, .post-time-custom {
+    color: #947cb0;
+    font-size: 0.9em;
+    text-align: right;
+}
+.pagination-custom {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 1.1em;
+    color: #a08ac3;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.page-number-custom {
+    padding: 5px 10px;
+    border: 1px solid #d8bfd8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+.page-number-custom:hover {
+    background-color: #d8bfd8;
+    color: #fff;
+}
+.page-number-custom.active {
+    background-color: #8a2be2;
+    color: #fff;
+}
+
+/* 帖子详情美化 */
+@keyframes star-glow-deep {
+    0% { box-shadow: 0 0 15px rgba(189, 137, 255, 0.5), 0 0 25px rgba(255, 192, 203, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(189, 137, 255, 0.8), 0 0 50px rgba(255, 192, 203, 0.6); }
+    100% { box-shadow: 0 0 15px rgba(189, 137, 255, 0.5), 0 0 25px rgba(255, 192, 203, 0.4); }
+}
+.thread-container-custom {
+    background: linear-gradient(135deg, #fdfaff, #fff0f7);
+    border-radius: 20px;
+    padding: 30px 40px;
+    font-family: 'Times New Roman', serif;
+    max-width: 950px;
+    margin: auto;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    animation: star-glow-deep 8s infinite ease-in-out;
+    display: none; /* 默认隐藏 */
+}
+.thread-breadcrumb-custom {
+    font-size: 1.1em;
+    color: #9370db;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #d8bfd8;
+}
+.main-post-custom .post-header-custom {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.main-post-custom .post-title-custom {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #4b0082;
+    margin-bottom: 10px;
+}
+.main-post-custom .post-meta-custom {
+    font-size: 0.9em;
+    color: #b0a4c2;
+}
+.main-post-custom .post-meta-custom span {
+    margin: 0 10px;
+}
+.main-post-custom .post-body-custom {
+    font-size: 1.2em;
+    line-height: 1.8;
+    color: #483d8b;
+    padding: 20px 0;
+    white-space: pre-wrap;
+}
+.comments-section-custom {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #e6e6fa;
+}
+.comment-list-custom {
+    list-style: none;
+    padding: 0;
+}
+.comment-item-custom {
+    display: flex;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    transition: background-color 0.3s;
+}
+.comment-item-custom:nth-child(odd) {
+    background-color: rgba(230, 230, 250, 0.4);
+}
+.comment-item-custom:hover {
+    background-color: rgba(216, 191, 216, 0.4);
+}
+.comment-avatar-custom {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #dda0dd, #8a2be2);
+    margin-right: 15px;
+    flex-shrink: 0;
+    position: relative;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+}
+.comment-avatar-custom::before {
+    content: '★';
+}
+.comment-content-custom {
+    display: flex;
+    flex-direction: column;
+}
+.comment-author-custom {
+    font-weight: bold;
+    color: #8a2be2;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+.comment-text-custom {
+    color: #6a5acd;
+    line-height: 1.6;
+}
+.return-button {
+    background-color: #d8bfd8;
+    color: #8a2be2;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 10px;
+    display: inline-block;
+}
+.return-button:hover {
+    background-color: #b0a4c2;
+    transform: scale(1.05);
+}
+.reply-input-custom {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(230, 230, 250, 0.6);
+    border-radius: 10px;
+}
+.reply-input-custom textarea {
+    width: 98%;
+    height: 80px;
+    border-radius: 8px;
+    border: 1px solid #d8bfd8;
+    padding: 10px;
+    resize: none;
+    font-family: 'Times New Roman', serif;
+    color: #483d8b;
+}
+.reply-input-custom button {
+    margin-top: 10px;
+    float: right;
+    background-color: #8a2be2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.reply-input-custom button:hover {
+    background-color: #6a5acd;
+}
+</style>
+</head>
+<body>
+
+<div id="forum-list-view" class="thread-list-container-custom">
+    <div class="list-header-custom">
+        <h2>回音壁</h2>
+        <button class="action-button">发布新帖</button>
+    </div>
+    <ul id="post-list" class="post-list-custom">
+        <li class="post-item-custom pinned" data-post-id="pinned-0">
+            <span class="post-type-custom type-notice">【公告】</span>
+            <span class="post-title-custom">关于“和平契约”的补充说明及近期违规案例公示。</span>
+            <span class="post-author-custom">档案员</span>
+            <span class="post-time-custom">纪元之初</span>
+        </li>
+        </ul>
+    <div class="pagination-custom">
+        <span class="page-text">页码:</span>
+        <div id="page-numbers">
+            </div>
+    </div>
+</div>
+
+<div id="forum-thread-view" class="thread-container-custom">
+    <div class="thread-breadcrumb-custom">
+        <button id="return-button" class="return-button">返回列表</button>
+    </div>
+    <div class="main-post-custom">
+        <div class="post-header-custom">
+            <h1 id="thread-title" class="post-title-custom"></h1>
+            <div class="post-meta-custom">
+                <span>作者：<span id="thread-author"></span></span>
+                <span>日期：<span id="thread-time"></span></span>
+            </div>
+        </div>
+        <div id="thread-body" class="post-body-custom"></div>
+    </div>
+    <div class="comments-section-custom">
+        <ul id="comment-list" class="comment-list-custom">
+            </ul>
+        <div class="reply-input-custom">
+            <textarea id="comment-textarea" placeholder="在此留下你的回音..."></textarea>
+            <button id="submit-comment-button">发布回音</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forumListView = document.getElementById('forum-list-view');
+    const forumThreadView = document.getElementById('forum-thread-view');
+    const postList = document.getElementById('post-list');
+    const returnButton = document.getElementById('return-button');
+    const pageNumbersContainer = document.getElementById('page-numbers');
+    const commentTextarea = document.getElementById('comment-textarea');
+    const submitCommentButton = document.getElementById('submit-comment-button');
+    
+    let currentPosts = [];
+    const postData = [
+        {
+            type: 'chat',
+            title: '最近有没有什么有趣的、能打发一个世纪的新爱好？',
+            author: '拾光者',
+            time: '三刻之前',
+            body: '如题，永恒的生命虽然美妙，但有时候也难免感到一丝无聊。各位有什么新奇的爱好可以分享吗？我已经尝试过星际园艺、时间线编织和梦境酿酒了，急需一些新的刺激！',
+            comments: [
+                { author: '星尘诗人', text: '可以试试用星云的尘埃雕刻记忆碎片。每一块都是独一无二的，且能永久保存。' },
+                { author: '无名之影', text: '我最近在研究如何和黑洞进行“对话”，挺有意思的。' }
+            ]
+        },
+        {
+            type: 'help',
+            title: '求助！怎么阻止我的“梦境”实体化？',
+            author: '迷梦者',
+            time: '两刻之前',
+            body: '我做了一个非常可怕的噩梦，醒来之后发现梦里的怪物居然出现在了我的房间里，而且还在我的衣柜里安家了！我该怎么让它回去？在线等，挺急的。',
+            comments: [
+                { author: '现实编织者', text: '首先，保持冷静。梦境实体化需要强烈的精神共鸣。试试用“绝对的虚无”来填充你的思想，切断与它的联系。如果不行，我建议你寻求档案员的帮助。' },
+                { author: '无名之影', text: '把衣柜锁上，然后忽略它。没有关注，就没有力量。' }
+            ]
+        },
+        {
+            type: 'rant',
+            title: '对时空管理局的日常抱怨',
+            author: '时空浪人',
+            time: '一刻之前',
+            body: '今天又因为在公元前2000年喝了杯奶茶而被时空管理局罚款了。他们是不是以为我们这些浪人都是富豪啊？我只是想尝尝那时的风味，又没有改变历史！真是烦人！',
+            comments: [
+                { author: '星尘诗人', text: '我也被他们警告过，只因为我在中世纪写了首关于未来太空飞船的诗。他们真是太缺乏想象力了。' },
+                { author: '档案员', text: '请注意您的言辞。时空管理局的规定是保障所有存在不被意外干扰，避免因果悖论的必要措施。' }
+            ]
+        },
+        {
+            type: 'share',
+            title: '分享我的新发现：一种能自我进化的音乐！',
+            author: '音律游侠',
+            time: '半刻之前',
+            body: '我找到了一种独特的声波模式，它能根据听者的情绪自动调整旋律和节奏。这意味着每个人听到的音乐都是独一无二的。我已经把它命名为“心灵共振”。有人想体验一下吗？',
+            comments: [
+                { author: '拾光者', text: '听起来很有趣！请分享给我！我正好需要点新东西来打发时间。' },
+                { author: '无名之影', text: '这种音乐模式有没有可能被用于精神控制？这是一个需要警惕的潜在风险。' }
+            ]
+        },
+        {
+            type: 'chat',
+            title: '关于“无限图书馆”的传说，你们听说过吗？',
+            author: '书页行者',
+            time: '刚才',
+            body: '听说有一个图书馆，收藏着所有可能存在和不存在的书籍，甚至包括那些从未被写出来的。有谁知道如何找到它吗？',
+            comments: [
+                { author: '档案员', text: '关于“无限图书馆”的记载属于一级机密，未经授权，请勿打探。' }
+            ]
+        },
+        {
+            type: 'chat',
+            title: '我在宇宙的边缘发现了一个新的颜色，该如何命名？',
+            author: '星尘诗人',
+            time: '现在',
+            body: '这种颜色既不像蓝色也不像紫色，它更像是宇宙诞生时最初的微光，带着一种深邃而又温柔的感觉。我该叫它什么？',
+            comments: [
+                { author: '拾光者', text: '“宇宙初恋”怎么样？听起来很浪漫。' },
+                { author: '音律游侠', text: '“寂静之音”。它像无声的旋律。' }
+            ]
+        },
+        {
+            type: 'help',
+            title: '求助：如何修复一个破损的记忆水晶？',
+            author: '回忆收藏家',
+            time: '1分钟前',
+            body: '我收藏的一块珍贵记忆水晶，记录了我第一次见到星河盛宴的场景，不小心摔坏了。有没有人知道修复它的方法？我不想失去那段美好的回忆。',
+            comments: [
+                { author: '现实编织者', text: '记忆水晶的修复需要特定的精神能量。你可以尝试用你的意念重新填充它。但风险很大，可能会丢失更多细节。' }
+            ]
+        },
+        {
+            type: 'rant',
+            title: '我的永生之猫又穿越到我的过去了！',
+            author: '时空浪人',
+            time: '2分钟前',
+            body: '我养了一只永生之猫，它拥有随意穿越时间的能力。今天它又跑到我刚开始永生训练的时候，打翻了我的实验试剂，害我差点被导师骂死！谁来告诉我怎么管教这只猫？',
+            comments: [
+                { author: '迷梦者', text: '猫总是猫。你不能指望它们遵守时空法则。也许你可以把它关进一个没有时间的盒子？' }
+            ]
+        },
+        {
+            type: 'share',
+            title: '我写了一本关于“平行宇宙”的日记！',
+            author: '书页行者',
+            time: '3分钟前',
+            body: '这本日记记录了我访问过的每一个平行宇宙的所见所闻。虽然我不能分享具体内容，但我可以告诉你，每个宇宙都有它独特的美丽和疯狂。',
+            comments: [
+                { author: '档案员', text: '这本日记的记录可能触犯了多重宇宙观察协议。请尽快联系档案部门进行备案。' }
+            ]
+        }
+    ];
+
+    const postsPerPage = 8;
+    let currentPage = 1;
+
+    function renderPostList(page) {
+        postList.innerHTML = ''; // 清空列表
+        // 渲染置顶帖
+        const pinnedPost = document.querySelector('.post-item-custom.pinned');
+        if (pinnedPost) {
+            postList.appendChild(pinnedPost);
+        }
+
+        const start = (page - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        const pagePosts = postData.slice(start, end);
+
+        pagePosts.forEach((post, index) => {
+            const li = document.createElement('li');
+            li.className = 'post-item-custom';
+            li.dataset.postId = start + index;
+            
+            li.innerHTML = `
+                <span class="post-type-custom type-${post.type}">【${getTypeText(post.type)}】</span>
+                <span class="post-title-custom">${post.title}</span>
+                <span class="post-author-custom">${post.author}</span>
+                <span class="post-time-custom">${post.time}</span>
+            `;
+            postList.appendChild(li);
+        });
+        
+        document.querySelectorAll('.post-item-custom:not(.pinned)').forEach(item => {
+            item.addEventListener('click', function() {
+                const postId = this.dataset.postId;
+                showThreadView(postId);
+            });
+        });
+    }
+
+    function renderPagination() {
+        pageNumbersContainer.innerHTML = '';
+        const totalPages = Math.ceil(postData.length / postsPerPage);
+        for (let i = 1; i <= totalPages; i++) {
+            const pageSpan = document.createElement('span');
+            pageSpan.className = 'page-number-custom';
+            if (i === currentPage) {
+                pageSpan.classList.add('active');
+            }
+            pageSpan.textContent = i;
+            pageSpan.addEventListener('click', () => {
+                currentPage = i;
+                renderPostList(currentPage);
+                updatePaginationActiveState();
+            });
+            pageNumbersContainer.appendChild(pageSpan);
+        }
+    }
+
+    function updatePaginationActiveState() {
+        document.querySelectorAll('.page-number-custom').forEach(span => {
+            if (parseInt(span.textContent) === currentPage) {
+                span.classList.add('active');
+            } else {
+                span.classList.remove('active');
+            }
+        });
+    }
+
+    function showThreadView(postId) {
+        const post = postData[postId];
+        document.getElementById('thread-title').textContent = post.title;
+        document.getElementById('thread-author').textContent = post.author;
+        document.getElementById('thread-time').textContent = post.time;
+        document.getElementById('thread-body').textContent = post.body;
+        
+        const commentList = document.getElementById('comment-list');
+        commentList.innerHTML = '';
+        if (post.comments) {
+            post.comments.forEach(comment => {
+                const commentItem = document.createElement('li');
+                commentItem.className = 'comment-item-custom';
+                commentItem.innerHTML = `
+                    <div class="comment-avatar-custom"></div>
+                    <div class="comment-content-custom">
+                        <span class="comment-author-custom">${comment.author}</span>
+                        <span class="comment-text-custom">${comment.text}</span>
+                    </div>
+                `;
+                commentList.appendChild(commentItem);
+            });
+        }
+        
+        forumListView.style.display = 'none';
+        forumThreadView.style.display = 'block';
+    }
+
+    function getTypeText(type) {
+        switch (type) {
+            case 'chat': return '闲聊';
+            case 'help': return '求助';
+            case 'rant': return '吐槽';
+            case 'share': return '分享';
+            default: return '未知';
+        }
+    }
+
+    renderPostList(currentPage);
+    renderPagination();
+
+    returnButton.addEventListener('click', function() {
+        forumThreadView.style.display = 'none';
+        forumListView.style.display = 'block';
+    });
+});
+</script>
+
+</body>
+</html>
